@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+	"baseUrl": "./src",
+	"esModuleInterop": true,
+	"module": "commonjs",
+	"noImplicitReturns": true,
+	"noUnusedLocals": true,
+	"outDir": "dist",
+	"sourceMap": true,
+	"strict": true,
+	"target": "es2017"
+    },
+    "compileOnSave": true,
+    "exclude": [
+	"src/**/*test.ts"
+    ],
+    "include": [
+      "src"
+    ]
+}

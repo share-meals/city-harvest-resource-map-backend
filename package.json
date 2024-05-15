@@ -1,0 +1,24 @@
+{
+   "name": "city-harvest-resource-map-backend",
+   "version": "0.0.1",
+   "main": "dist/index.js",
+   "repository": "git@github.com:share-meals/city-harvest-resource-map-backend.git",
+   "author": "Jon Chin <jon@shareneaks.org>",
+   "license": "MIT",
+   "devDependencies": {
+      "npm-run-all": "^4.1.5",
+      "typescript": "^5.4.2"
+   },
+   "scripts": {
+      "build": "tsc",
+      "deploy": "run-s deploy:log-feature-click deploy:log-geocode",
+      "deploy:log-feature-click": "gcloud functions deploy log-feature-click --gen2 --region us-east1 --trigger-http",
+      "deploy:log-geocode": "gcloud functions deploy log-geocode --gen2 --region us-east1 --trigger-http",
+      "prestart": "npm run build",
+      "gcp-build": "npm run build"
+   },
+   "dependencies": {
+      "@google-cloud/bigquery": "^7.7.0",
+      "@google-cloud/functions-framework": "^3.3.0"
+   }
+}
