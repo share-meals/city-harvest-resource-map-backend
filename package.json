@@ -12,13 +12,14 @@
    "scripts": {
       "build": "tsc",
       "deploy": "run-s deploy:log-feature-click deploy:log-geocode",
-      "deploy:log-feature-click": "gcloud functions deploy log-feature-click --gen2 --region us-east1 --trigger-http --allow-unauthenticated --runtime nodejs18",
-      "deploy:log-geocode": "gcloud functions deploy log-geocode --gen2 --region us-east1 --trigger-http --allow-unauthenticated --runtime nodejs18",
+      "deploy:log-feature-click": "gcloud functions deploy log-feature-click --gen2 --region us-east1 --trigger-http --allow-unauthenticated --runtime nodejs20",
+      "deploy:log-geocode": "gcloud functions deploy log-geocode --gen2 --region us-east1 --trigger-http --allow-unauthenticated --runtime nodejs20",
       "prestart": "npm run build",
       "gcp-build": "npm run build"
    },
    "dependencies": {
-      "@google-cloud/bigquery": "^7.7.0",
-      "@google-cloud/functions-framework": "^3.3.0"
-   }
+      "@google-cloud/bigquery": "^7.9.3",
+      "@google-cloud/functions-framework": "^3.5.1"
+   },
+   "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
 }
