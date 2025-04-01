@@ -2,10 +2,10 @@ import {HttpFunction} from '@google-cloud/functions-framework';
 import {BigQuery} from '@google-cloud/bigquery';
 
 export const logFeatureClick: HttpFunction = async (req, res) => {
+  res.set('Access-Control-Allow-Origin', "*")
+  res.set('Access-Control-Allow-Methods', 'GET, POST');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
   if(req.method === 'OPTIONS'){
-    res.set('Access-Control-Allow-Origin', "*")
-    res.set('Access-Control-Allow-Methods', 'GET, POST');
-    res.set('Access-Control-Allow-Headers', 'Content-Type');
     res.status(204).send('');
   }else{
     const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
