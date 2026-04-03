@@ -11,6 +11,7 @@
    },
    "scripts": {
       "build": "tsc",
+      "dev": "LOCAL=true node dist/dev-server.js",
       "deploy": "run-s deploy:log-feature-click deploy:log-geocode",
       "deploy:log-feature-click": "gcloud functions deploy log-feature-click --gen2 --region us-east1 --trigger-http --allow-unauthenticated --runtime nodejs20",
       "deploy:log-geocode": "gcloud functions deploy log-geocode --gen2 --region us-east1 --trigger-http --allow-unauthenticated --runtime nodejs20",
