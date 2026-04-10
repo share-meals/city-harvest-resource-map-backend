@@ -17,6 +17,7 @@ export const logGeocode: HttpFunction = async (req, res) => {
       lat: parseFloat(req.body.lat.toFixed(8)),
       lng: parseFloat(req.body.lng.toFixed(8)),
       language: req.body.language || 'en',
+      sessionId: req.body.sessionId || null,
       timestamp: new Date(),
     };
     if(LOCAL){
