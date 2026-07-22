@@ -1,6 +1,6 @@
 import {HttpFunction} from '@google-cloud/functions-framework';
 import {BigQuery} from '@google-cloud/bigquery';
-import {lookupGeo} from './geo';
+import {truncateIp} from './ip';
 
 const LOCAL = process.env.LOCAL === 'true';
 // Staging deploys set ENV=staging and land in a separate BigQuery dataset
@@ -14,18 +14,13 @@ function truncateCoord(n: number | null | undefined): number | null {
   return Math.round(n * 1000) / 1000;
 }
 
-// Rows never carry the raw IP, the typed search text, or any join key
-// linking the geocodes row to the searches row.
-
 interface GeocodeRow {
   sessionId: string | null;
   lat: number | null;
   lng: number | null;
   language: string;
   osFamily: string | null;
-  city: string | null;
-  region: string | null;
-  country: string | null;
+  ipTruncated: string | null;
   locationType: string | null;
   timestamp: Date;
 }
@@ -39,7 +34,7 @@ interface SearchRow {
   resolvedCountry: string | null;
   language: string;
   osFamily: string | null;
-  country: string | null;
+  ipTruncated: string | null;
   timestamp: Date;
 }
 
@@ -53,7 +48,7 @@ export const logGeocode: HttpFunction = async (req, res) => {
   }
 
   const b = req.body || {};
-  const geo = lookupGeo(req.headers['x-forwarded-for']);
+  const ipTruncated = truncateIp(req.headers['x-forwarded-for']);
   const language = b.language || 'en';
   const osFamily = b.osFamily || null;
   const timestamp = new Date();
@@ -67,7 +62,7 @@ export const logGeocode: HttpFunction = async (req, res) => {
     resolvedCountry: b.resolvedCountry || null,
     language,
     osFamily,
-    country: geo.country,
+    ipTruncated,
     timestamp,
   };
 
@@ -83,9 +78,7 @@ export const logGeocode: HttpFunction = async (req, res) => {
       lng: truncateCoord(b.lng),
       language,
       osFamily,
-      city: geo.city,
-      region: geo.region,
-      country: geo.country,
+      ipTruncated,
       locationType: b.resolvedLocationType || null,
       timestamp,
     };

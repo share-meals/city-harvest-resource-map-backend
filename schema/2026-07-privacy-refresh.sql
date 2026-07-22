@@ -9,9 +9,9 @@
 --
 -- Deploy order for either environment:
 --   1. Run this file (adds columns + creates the new table).
---   2. Deploy the new Cloud Function code — it starts writing to the
---      new columns and to the searches table. Legacy columns
---      (address, ipAddress) are left untouched; new rows have NULL there.
+--   2. Deploy the new Cloud Function code — it starts writing the new
+--      columns and to the searches table. Legacy `address` and
+--      `ipAddress` columns are left untouched; new rows have NULL there.
 --   3. Confirm new rows look right, no `console.error` alerts firing.
 --   4. Optionally: drop the legacy columns once you're sure. (Commented
 --      out below.)
@@ -24,7 +24,13 @@
 
 -- geocodes: relax `address` (new code no longer sends it), add the
 -- session/language columns that were missing from the live schema (BigQuery
--- has been silently dropping them from writes), and add the new enrichment.
+-- has been silently dropping them from writes), and add the new columns
+-- the privacy-refresh code writes.
+--
+-- Note: we store `ipTruncated` — a CIDR string like "108.30.42.0/24"
+-- (IPv4) or "2001:db8:1234::/48" (IPv6), matching Google Analytics'
+-- Universal Analytics `_anonymizeIp` convention. Geo (city / region /
+-- country) is derived by analysts on demand from the truncated prefix.
 ALTER TABLE `resourceMap.geocodes`
   ALTER COLUMN address DROP NOT NULL;
 
@@ -32,20 +38,16 @@ ALTER TABLE `resourceMap.geocodes`
   ADD COLUMN IF NOT EXISTS sessionId     STRING,
   ADD COLUMN IF NOT EXISTS language      STRING,
   ADD COLUMN IF NOT EXISTS osFamily      STRING,
-  ADD COLUMN IF NOT EXISTS city          STRING,
-  ADD COLUMN IF NOT EXISTS region        STRING,
-  ADD COLUMN IF NOT EXISTS country       STRING,
+  ADD COLUMN IF NOT EXISTS ipTruncated   STRING,
   ADD COLUMN IF NOT EXISTS locationType  STRING;
 
--- featureClicks: same missing columns + enrichment (no locationType — pantry
--- data is public).
+-- featureClicks: same missing columns + ipTruncated (no locationType —
+-- pantry data is public).
 ALTER TABLE `resourceMap.featureClicks`
-  ADD COLUMN IF NOT EXISTS sessionId  STRING,
-  ADD COLUMN IF NOT EXISTS language   STRING,
-  ADD COLUMN IF NOT EXISTS osFamily   STRING,
-  ADD COLUMN IF NOT EXISTS city       STRING,
-  ADD COLUMN IF NOT EXISTS region     STRING,
-  ADD COLUMN IF NOT EXISTS country    STRING;
+  ADD COLUMN IF NOT EXISTS sessionId    STRING,
+  ADD COLUMN IF NOT EXISTS language     STRING,
+  ADD COLUMN IF NOT EXISTS osFamily     STRING,
+  ADD COLUMN IF NOT EXISTS ipTruncated  STRING;
 
 -- searches: new table. Sparse by design — no sessionId, no coord,
 -- no raw text. Populated on every /log-geocode call including zero-result
@@ -59,9 +61,10 @@ CREATE TABLE IF NOT EXISTS `resourceMap.searches` (
   resolvedCountry   STRING,
   language          STRING    NOT NULL,
   osFamily          STRING,
-  country           STRING,                -- derived from client IP
+  ipTruncated       STRING,                -- /24 IPv4 or /48 IPv6 CIDR
   timestamp         TIMESTAMP NOT NULL
-);
+)
+PARTITION BY DATE(timestamp);
 
 -- Optional cleanup step (run AFTER verifying new code writes correctly
 -- and you're ready to stop retaining raw address / IP in these tables).
