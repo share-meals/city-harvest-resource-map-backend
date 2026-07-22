@@ -14,8 +14,11 @@
       "build": "tsc",
       "dev": "LOCAL=true node dist/dev-server.js",
       "deploy": "run-s deploy:log-feature-click deploy:log-geocode",
-      "deploy:log-feature-click": "gcloud functions deploy log-feature-click --gen2 --region us-east1 --trigger-http --allow-unauthenticated --runtime nodejs20",
-      "deploy:log-geocode": "gcloud functions deploy log-geocode --gen2 --region us-east1 --trigger-http --allow-unauthenticated --runtime nodejs20",
+      "deploy:log-feature-click": "gcloud functions deploy log-feature-click --gen2 --region us-east1 --trigger-http --allow-unauthenticated --runtime nodejs20 --entry-point log-feature-click",
+      "deploy:log-geocode": "gcloud functions deploy log-geocode --gen2 --region us-east1 --trigger-http --allow-unauthenticated --runtime nodejs20 --entry-point log-geocode",
+      "deploy:staging": "run-s deploy:staging:log-feature-click deploy:staging:log-geocode",
+      "deploy:staging:log-feature-click": "gcloud functions deploy log-feature-click-staging --gen2 --region us-east1 --trigger-http --allow-unauthenticated --runtime nodejs20 --entry-point log-feature-click --set-env-vars ENV=staging",
+      "deploy:staging:log-geocode": "gcloud functions deploy log-geocode-staging --gen2 --region us-east1 --trigger-http --allow-unauthenticated --runtime nodejs20 --entry-point log-geocode --set-env-vars ENV=staging",
       "prestart": "npm run build",
       "gcp-build": "npm run build"
    },

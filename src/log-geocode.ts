@@ -3,7 +3,9 @@ import {BigQuery} from '@google-cloud/bigquery';
 import {lookupGeo} from './geo';
 
 const LOCAL = process.env.LOCAL === 'true';
-const DATASET = 'resourceMap';
+// Staging deploys set ENV=staging and land in a separate BigQuery dataset
+// so staging traffic never mixes with production analytics.
+const DATASET = process.env.ENV === 'staging' ? 'resourceMap_staging' : 'resourceMap';
 
 // Truncate coord to a ~110m grid so we never persist a home-precise
 // location for a user's search.

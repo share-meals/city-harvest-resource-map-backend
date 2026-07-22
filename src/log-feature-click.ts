@@ -3,6 +3,9 @@ import {BigQuery} from '@google-cloud/bigquery';
 import {lookupGeo} from './geo';
 
 const LOCAL = process.env.LOCAL === 'true';
+// Staging deploys set ENV=staging and land in a separate BigQuery dataset
+// so staging traffic never mixes with production analytics.
+const DATASET = process.env.ENV === 'staging' ? 'resourceMap_staging' : 'resourceMap';
 
 interface FeatureClickRow {
   featureId: string | null;
@@ -51,7 +54,7 @@ export const logFeatureClick: HttpFunction = async (req, res) => {
 
   try {
     const bigquery = new BigQuery();
-    await bigquery.dataset('resourceMap').table('featureClicks').insert(row);
+    await bigquery.dataset(DATASET).table('featureClicks').insert(row);
   } catch (err: any) {
     console.error('[log-feature-click] BigQuery insert to "featureClicks" failed:', err?.errors?.[0] || err);
   }
