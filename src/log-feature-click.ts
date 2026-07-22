@@ -1,6 +1,6 @@
 import {HttpFunction} from '@google-cloud/functions-framework';
 import {BigQuery} from '@google-cloud/bigquery';
-import {lookupGeo} from './geo';
+import {truncateIp} from './ip';
 
 const LOCAL = process.env.LOCAL === 'true';
 // Staging deploys set ENV=staging and land in a separate BigQuery dataset
@@ -14,9 +14,7 @@ interface FeatureClickRow {
   lng: number | null;
   language: string;
   osFamily: string | null;
-  city: string | null;
-  region: string | null;
-  country: string | null;
+  ipTruncated: string | null;
   timestamp: Date;
 }
 
@@ -30,7 +28,7 @@ export const logFeatureClick: HttpFunction = async (req, res) => {
   }
 
   const b = req.body || {};
-  const geo = lookupGeo(req.headers['x-forwarded-for']);
+  const ipTruncated = truncateIp(req.headers['x-forwarded-for']);
 
   const row: FeatureClickRow = {
     featureId: b.id != null ? String(b.id) : null,
@@ -40,9 +38,7 @@ export const logFeatureClick: HttpFunction = async (req, res) => {
     lng: typeof b.lng === 'number' && isFinite(b.lng) ? parseFloat(b.lng.toFixed(8)) : null,
     language: b.language || 'en',
     osFamily: b.osFamily || null,
-    city: geo.city,
-    region: geo.region,
-    country: geo.country,
+    ipTruncated,
     timestamp: new Date(),
   };
 
